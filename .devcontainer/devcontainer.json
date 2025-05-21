@@ -10,7 +10,9 @@
                 "ms-azuretools.vscode-docker",
                 "dionmunk.vscode-notes",
                 "GitHub.copilot",
-                "Gruntfuggly.todo-tree"
+                "Gruntfuggly.todo-tree",
+                "tamasfe.even-better-toml",
+                "JuanBlanco.solidity"
             ]
         }
     }
