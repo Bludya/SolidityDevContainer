@@ -1,0 +1,71 @@
+FROM ubuntu:22.04
+
+# configure users
+ARG MNT_PATH
+ARG PASS
+ARG USER_ID
+ARG USER_NAME
+ARG GROUP_ID
+ARG GROUP_NAME
+ARG DOCKER_GROUP_ID
+ARG GIT_EMAIL
+ARG GIT_NAME
+
+RUN addgroup -gid $DOCKER_GROUP_ID docker && \
+    if [ $USER_NAME != 'root' ]; then \
+    groupadd --gid ${GROUP_ID} ${GROUP_NAME}; \
+    useradd --no-log-init --create-home --shell /bin/bash --uid ${USER_ID} --gid ${GROUP_ID} ${USER_NAME}; \
+    fi && \
+    chsh -s /bin/bash $USER_NAME && \
+    usermod -a -G docker $USER_NAME && \
+    usermod -a -G sudo $USER_NAME && \
+    echo "$USER_NAME:$PASS" | chpasswd && \
+    echo "root:$PASS" | chpasswd
+
+
+
+WORKDIR /tmp
+
+# install sudo
+RUN apt-get update && apt-get -y install sudo libpq5
+
+# install docker
+RUN apt-get -y install \
+    ca-certificates \
+    curl && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc && \
+    chmod a+r /etc/apt/keyrings/docker.asc && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${VERSION_CODENAME}") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+   
+# install nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@11.0.0
+
+# install pnpm
+RUN npm install --global pnpm && \
+    SHELL=bash pnpm setup
+
+# neeeded for make
+RUN apt-get update && \
+    apt-get install build-essential -y && \
+    apt-get install jq -y
+
+WORKDIR $MNT_PATH
+
+USER $USER_NAME
+
+# RUN foundryup
+RUN /bin/bash -c "curl -L https://foundry.paradigm.xyz | bash && ~/.foundry/bin/foundryup"
+
+RUN git config --global pull.rebase false && \
+    git config --global user.email "${GIT_EMAIL}" && \
+    git config --global user.name "${GIT_NAME}"
+
+CMD ["sleep", "infinity"]

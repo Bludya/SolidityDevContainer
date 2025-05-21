@@ -1,0 +1,17 @@
+{
+    "name": "solidity-workspace",
+    "service": "solidity-workspace",
+    "shutdownAction": "stopCompose",
+    "workspaceFolder": "${localWorkspaceFolder}",
+    "dockerComposeFile": "docker-compose.yml",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "dionmunk.vscode-notes",
+                "GitHub.copilot",
+                "Gruntfuggly.todo-tree"
+            ]
+        }
+    }
+}
